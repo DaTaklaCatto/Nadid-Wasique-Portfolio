@@ -1,182 +1,426 @@
-(function () {
-  "use strict";
+gsap.registerPlugin(CustomEase);
 
-  // Selector
-  const select = (el, all = false) => {
-    el = el.trim();
-    if (all) {
-      return [...document.querySelectorAll(el)];
-    } else {
-      return document.querySelector(el);
-    }
+gsap.set(".nav", { display: "none" });
+
+CustomEase.create("main", "0.65, 0.01, 0.05, 0.99");
+
+gsap.defaults({
+  ease: "main",
+  duration: 0.7,
+});
+
+function initMenu() {
+  let navWrap = document.querySelector(".nav");
+  let state = navWrap.getAttribute("data-nav");
+  let overlay = navWrap.querySelector(".overlay");
+  let menu = navWrap.querySelector(".menu");
+  let bgPanels = navWrap.querySelectorAll(".bg-panel");
+  let menuToggles = document.querySelectorAll("[data-menu-toggle]");
+  let menuLinks = navWrap.querySelectorAll(".menu-link");
+  let fadeTargets = navWrap.querySelectorAll("[data-menu-fade]");
+  let menuButton = document.querySelector(".menu-button");
+  let menuButtonTexts = menuButton.querySelectorAll("p");
+  let menuButtonIcon = menuButton.querySelector(".menu-button-icon");
+
+  let tl = gsap.timeline();
+
+  const openNav = () => {
+    navWrap.setAttribute("data-nav", "open");
+
+    tl.clear()
+      .set(navWrap, { display: "block" })
+      .set(menu, { xPercent: 0 }, "<")
+      .fromTo(menuButtonTexts, { yPercent: 0 }, { yPercent: -100, stagger: 0.2 })
+      .fromTo(menuButtonIcon, { rotate: 0 }, { rotate: 315 }, "<")
+      .fromTo(overlay, { autoAlpha: 0 }, { autoAlpha: 1 }, "<")
+      .fromTo(bgPanels, { xPercent: 101 }, { xPercent: 0, stagger: 0.12, duration: 0.575 }, "<")
+      .fromTo(menuLinks, { yPercent: 140, rotate: 10 }, { yPercent: 0, rotate: 0, stagger: 0.05 }, "<+=0.35")
+      .fromTo(fadeTargets, { autoAlpha: 0, yPercent: 50 }, { autoAlpha: 1, yPercent: 0, stagger: 0.04 }, "<+=0.2");
   };
 
-  // Event Listener
-  const on = (type, el, listener, all = false) => {
-    let selectEl = select(el, all);
-    if (selectEl) {
-      if (all) {
-        selectEl.forEach((e) => e.addEventListener(type, listener));
+  const closeNav = () => {
+    navWrap.setAttribute("data-nav", "closed");
+
+    tl.clear()
+      .to(overlay, { autoAlpha: 0 })
+      .to(menu, { xPercent: 120 }, "<")
+      .to(menuButtonTexts, { yPercent: 0 }, "<")
+      .to(menuButtonIcon, { rotate: 0 }, "<")
+      .set(navWrap, { display: "none" });
+  };
+
+  // Toggle menu open / close depending on its current state
+  menuToggles.forEach((toggle) => {
+    toggle.addEventListener("click", () => {
+      state = navWrap.getAttribute("data-nav");
+      if (state === "open") {
+        closeNav();
       } else {
-        selectEl.addEventListener(type, listener);
+        openNav();
       }
+    });
+  });
+
+  // If menu is open, you can close it using the "escape" key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && navWrap.getAttribute("data-nav") === "open") {
+      closeNav();
     }
-  };
-
-  // Scrollspy
-  const onscroll = (el, listener) => {
-    el.addEventListener("scroll", listener);
-  };
-//Hero Text Animation
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-let interval = null;
-
-document.querySelector("#ani_text").onmouseover = event => {  
-  let iteration = 0;
-  
-  clearInterval(interval);
-  
-  interval = setInterval(() => {
-    event.target.innerText = event.target.innerText
-      .split("")
-      .map((letter, index) => {
-        if(index < iteration) {
-          return event.target.dataset.value[index];
-        }
-      
-        return letters[Math.floor(Math.random() * 26)]
-      })
-      .join("");
-    
-    if(iteration >= event.target.dataset.value.length){ 
-      clearInterval(interval);
-    }
-    
-    iteration += 1 / 3;
-  }, 30);
+  });
 }
 
-  // Navbar Active Design Function
-  let navbarlinks = select("#navbar .scrollto", true);
-  const navbarlinksActive = () => {
-    let position = window.scrollY + 200;
-    navbarlinks.forEach((navbarlink) => {
-      if (!navbarlink.hash) return;
-      let section = select(navbarlink.hash);
-      if (!section) return;
-      if (position >= section.offsetTop && position <= section.offsetTop + section.offsetHeight) {
-        navbarlink.classList.add("active");
-      } else {
-        navbarlink.classList.remove("active");
-      }
-    });
-  };
-  window.addEventListener("load", navbarlinksActive);
-  onscroll(document, navbarlinksActive);
+document.addEventListener("DOMContentLoaded", () => {
+  initMenu();
 
-  const scrollto = (el) => {
-    let elementPos = select(el).offsetTop;
-    window.scrollTo({
-      top: elementPos,
-      behavior: "smooth",
-    });
-  };
+  var cursor = document.querySelector(".cursor"),
+    cursorScale = document.querySelectorAll(".cursor-scale"),
+    mouseX = 0,
+    mouseY = 0;
 
-  // Back to top button
-  let backtotop = select(".back-to-top");
-  if (backtotop) {
-    const toggleBacktotop = () => {
-      if (window.scrollY > 100) {
-        backtotop.classList.add("active");
-      } else {
-        backtotop.classList.remove("active");
-      }
-    };
-    window.addEventListener("load", toggleBacktotop);
-    onscroll(document, toggleBacktotop);
-  }
+  gsap.to({}, 0.016, {
+    repeat: -1,
 
-  // Mobile Nav Icon Toggle
-  on("click", ".mobile-nav-toggle", function (e) {
-    select("body").classList.toggle("mobile-nav-active");
-    this.classList.toggle("bi-list");
-    this.classList.toggle("bi-x");
-  });
-
-  // Scrollto links
-  on(
-    "click",
-    ".scrollto",
-    function (e) {
-      if (select(this.hash)) {
-        e.preventDefault();
-
-        let body = select("body");
-        if (body.classList.contains("mobile-nav-active")) {
-          body.classList.remove("mobile-nav-active");
-          let navbarToggle = select(".mobile-nav-toggle");
-          navbarToggle.classList.toggle("bi-list");
-          navbarToggle.classList.toggle("bi-x");
-        }
-        scrollto(this.hash);
-      }
+    onRepeat: function () {
+      gsap.set(cursor, {
+        css: {
+          left: mouseX,
+          top: mouseY,
+        },
+      });
     },
-    true
-  );
+  });
 
-  window.addEventListener("load", () => {
-    if (window.location.hash) {
-      if (select(window.location.hash)) {
-        scrollto(window.location.hash);
+  window.addEventListener("mousemove", function (e) {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  cursorScale.forEach((link) => {
+    link.addEventListener("mouseleave", () => {
+      cursor.classList.remove("grow");
+      cursor.classList.remove("grow-small");
+    });
+    link.addEventListener("mousemove", () => {
+      cursor.classList.add("grow");
+      if (link.classList.contains("small")) {
+        cursor.classList.remove("grow");
+        cursor.classList.add("grow-small");
       }
+    });
+  });
+
+  const linkOut = document.querySelectorAll(".link-out");
+
+  linkOut.forEach((linker) => {
+    linker.addEventListener("mouseenter", () => {
+      cursor.innerHTML = "<i class='fa-thin fa-arrow-up-right'></i>";
+    });
+    linker.addEventListener("mouseleave", () => {
+      cursor.innerHTML = "";
+    });
+  });
+
+  let counter = 50;
+  const preloaderCounter = document.getElementById("preloader-counter");
+  const interval = setInterval(() => {
+    if (counter < 100) {
+      counter++;
+      preloaderCounter.textContent = counter + "%";
+    } else {
+      clearInterval(interval);
+      gsap.to("#preloader", {
+        x: "-100%",
+        duration: 1,
+        ease: "power2.inOut",
+        onComplete: () => {
+          document.getElementById("preloader").style.display = "none";
+        },
+      });
     }
-  });
+  }, 30);
+});
 
-  // Preloader
-  let preloader = select("#preloader");
-  if (preloader) {
-    window.addEventListener("load", () => {
-      preloader.remove();
-    });
-  }
+// const containers = document.querySelectorAll(".input-container");
+// const form = document.querySelector("form");
 
-  // Hero typed animation
-  const typed = select(".typed");
-  if (typed) {
-    let typed_strings = typed.getAttribute("data-typed-items");
-    typed_strings = typed_strings.split(",");
-    new Typed(".typed", {
-      strings: typed_strings,
-      loop: true,
-      typeSpeed: 100,
-      backSpeed: 50,
-      backDelay: 2000,
-    });
-  }
+// const tl = gsap.timeline({
+//   defaults: {
+//     duration: 1,
+//   },
+// });
 
-  // Skills counterup animation
-  let skilsContent = select(".skills-content");
-  if (skilsContent) {
-    new Waypoint({
-      element: skilsContent,
-      offset: "80%",
-      handler: function (direction) {
-        let progress = select(".progress .progress-bar", true);
-        progress.forEach((el) => {
-          el.style.width = el.getAttribute("aria-valuenow") + "%";
-        });
-      },
-    });
-  }
+// //Line
+// const start = "M0 0.999512C0 0.999512 60.5 0.999512 150 0.999512C239.5 0.999512 300 0.999512 300 0.999512";
+// const end = "M1 0.999512C1 0.999512 61.5 7.5 151 7.5C240.5 7.5 301 0.999512 301 0.999512";
 
-  // AOS Animation
-  window.addEventListener("load", () => {
-    AOS.init({
-      duration: 500,
-      easing: "ease-in-out",
-      once: true,
-      mirror: false,
-    });
-  });
-})();
+// //Elastic Effect
+// containers.forEach((container) => {
+//   const input = container.querySelector(".input");
+//   const line = container.querySelector(".elastic-line");
+//   const placeholder = container.querySelector(".placeholder");
+
+//   input.addEventListener("focus", () => {
+//     //Check to see if there is any text in the input
+//     if (!input.value) {
+//       tl.fromTo(
+//         line,
+//         {
+//           attr: {
+//             d: start,
+//           },
+//         },
+//         {
+//           attr: {
+//             d: end,
+//           },
+//           ease: "Power2.easeOut",
+//           duration: 0.75,
+//         }
+//       );
+//       tl.to(
+//         line,
+//         {
+//           attr: {
+//             d: start,
+//           },
+//           ease: "elastic.out(3,0.5)",
+//         },
+//         "<50%"
+//       );
+//       //Placeholder Shift
+//       tl.to(
+//         placeholder,
+//         {
+//           top: -15,
+//           left: 0,
+//           scale: 0.7,
+//           duration: 0.5,
+//           ease: "Power2.easeOut",
+//         },
+//         "<15%"
+//       );
+//     }
+//   });
+// });
+
+// //Revert back if it's not focused
+// form.addEventListener("click", () => {
+//   containers.forEach((container) => {
+//     const input = container.querySelector(".input");
+//     const line = container.querySelector(".elastic-line");
+//     const placeholder = container.querySelector(".placeholder");
+
+//     if (document.activeElement !== input) {
+//       if (!input.value) {
+//         gsap.to(placeholder, {
+//           top: 0,
+//           left: 0,
+//           scale: 1,
+//           duration: 0.5,
+//           ease: "Power2.easeOut",
+//         });
+//       }
+//     }
+//     //We will do our validation
+//     //Name Validation
+//     input.addEventListener("input", (e) => {
+//       if (e.target.type === "text") {
+//         let inputText = e.target.value;
+//         if (inputText.length > 2) {
+//           colorize("#6391E8", line, placeholder);
+//         } else {
+//           colorize("#FE8C99", line, placeholder);
+//         }
+//       }
+//       //Validate Email
+//       if (e.target.type === "email") {
+//         let valid = validateEmail(e.target.value);
+//         if (valid) {
+//           colorize("#6391E8", line, placeholder);
+//         } else {
+//           colorize("#FE8C99", line, placeholder);
+//         }
+//       }
+//       //Validate Phone
+//       if (e.target.type === "tel") {
+//         let valid = validatePhone(e.target.value);
+//         if (valid) {
+//           colorize("#6391E8", line, placeholder);
+//         } else {
+//           colorize("#FE8C99", line, placeholder);
+//         }
+//       }
+//     });
+//   });
+// });
+
+// // checking email validation
+
+// function validateEmail(email) {
+//   let re = /\S+@\S+\.\S+/;
+//   return re.test(email);
+// }
+
+// function validatePhone(phone) {
+//   let re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
+//   return re.test(phone);
+// }
+
+// //COLORIZE FUNCTION
+// function colorize(color, line, placeholder) {
+//   gsap.to(line, {
+//     stroke: color,
+//     duration: 0.75,
+//   });
+//   gsap.to(placeholder, {
+//     color: color,
+//     duration: 0.75,
+//   });
+// }
+
+// //Checkbox animation fill
+// const checkbox = document.querySelector(".checkbox");
+// const tl2 = gsap.timeline({
+//   defaults: {
+//     duration: 0.5,
+//     ease: "Power2.easeOut",
+//   },
+// });
+// const tickMarkPath = document.querySelector(".tick-mark path");
+// const pathLength = tickMarkPath.getTotalLength();
+
+// gsap.set(tickMarkPath, {
+//   strokeDashoffset: pathLength,
+//   strokeDasharray: pathLength,
+// });
+
+// checkbox.addEventListener("click", () => {
+//   if (checkbox.checked) {
+//     tl2.to(".checkbox-fill", {
+//       top: "0%",
+//     });
+//     tl2.fromTo(
+//       tickMarkPath,
+//       {
+//         strokeDashoffset: pathLength,
+//       },
+//       {
+//         strokeDashoffset: 0,
+//       },
+//       "<50%"
+//     );
+//     tl2.to(
+//       ".checkbox-label",
+//       {
+//         color: "#6391e8",
+//       },
+//       "<"
+//     );
+//   } else {
+//     tl2.to(".checkbox-fill", {
+//       top: "100%",
+//     });
+//     tl2.fromTo(
+//       tickMarkPath,
+//       {
+//         strokeDashoffset: 0,
+//       },
+//       {
+//         strokeDashoffset: pathLength,
+//       },
+//       "<50%"
+//     );
+//     tl2.to(
+//       ".checkbox-label",
+//       {
+//         color: "#c5c5c5",
+//       },
+//       "<"
+//     );
+//   }
+// });
+
+// //Animating Character
+// gsap.set("#eye", {
+//   transformOrigin: "center",
+// });
+// gsap.fromTo(
+//   "#eye",
+//   {
+//     scaleY: 1,
+//   },
+//   {
+//     scaleY: 0.3,
+//     repeat: -1,
+//     yoyo: true,
+//     repeatDelay: 0.5,
+//     ease: "Power2.easeOut",
+//   }
+// );
+// gsap.fromTo(
+//   "#eyebrow",
+//   {
+//     y: 0,
+//   },
+//   {
+//     y: -1,
+//     repeat: -1,
+//     yoyo: true,
+//     repeatDelay: 0.5,
+//     ease: "Power2.easeOut",
+//   }
+// );
+
+// //Submit button
+// const button = document.querySelector("button");
+// const tl3 = gsap.timeline({
+//   defaults: {
+//     duration: 0.75,
+//     ease: "Power2.easeOut",
+//   },
+// });
+
+// button.addEventListener("click", (e) => {
+//   e.preventDefault();
+//   tl3.to(".contact-right, .contact-left", {
+//     y: 30,
+//     opacity: 0,
+//     pointerEvents: "none",
+//   });
+//   tl3.to(
+//     "form",
+//     {
+//       scale: 0.8,
+//     },
+//     "<"
+//   );
+//   tl3.fromTo(
+//     ".submitted",
+//     {
+//       opacity: 0,
+//       y: 30,
+//     },
+//     {
+//       opacity: 1,
+//       y: 0,
+//     }
+//   );
+//   //Hand wave
+//   gsap.set("#hand", {
+//     transformOrigin: "left",
+//   });
+//   gsap.fromTo(
+//     "#hand",
+//     {
+//       rotation: 0,
+//       y: 0,
+//     },
+//     {
+//       rotation: -10,
+//       y: 2,
+//       ease: "elastic(3,0.3)",
+//       duration: 2,
+//       delay: 1,
+//     }
+//   );
+// });

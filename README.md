@@ -1,9 +1,13 @@
-# Nadid Wasique
+# Nadid Wasique - Portfolio
 
-This is the code for my official <a href="https://nadid-wasique.netlify.app">website</a>.
+This project is my portfolio website, showcasing various case studies and projects. The website is designed to highlight my skills and experiences in a professional and visually appealing manner. It includes sections for case studies, project descriptions, and contact information.
 
-<a href="https://discord.gg/Mdh23bsrhp"><img src="https://img.shields.io/badge/Join My Discord Server-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+[![Netlify Status](https://api.netlify.com/api/v1/badges/762ab6aa-828b-4725-8a97-4f140ea1adc2/deploy-status)](https://app.netlify.com/sites/nadid-wasique/deploys)![GitHub last commit](https://img.shields.io/github/last-commit/DaTaklaCatto/Nadid-Wasique-Portfolio)
+![GitHub License](https://img.shields.io/github/license/DaTaklaCatto/Nadid-Wasique-Portfolio)
+![Discord](https://img.shields.io/discord/856191026058625044?logo=discord&label=Join%20My%20Discord)
 
-<img src="https://media.discordapp.net/attachments/1013108985295028254/1013109157798367313/ss-web.png?quality=lossless" alt="Website Screenshot">
+Check it out now: https://nadid.is-cool.dev/
 
-© [Nadid Wasique](https://github.com/DaTaklaCatto)
+---
+
+© Nadid Wasique 2022-25 — MIT LICENSE
